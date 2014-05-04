@@ -6,22 +6,10 @@ int change_hp(player_t *player,int hp){
     return(player->health_points > 0 ? 0 : 1);
 }
 
-card_t* play_card_from_hand(player_t *player,int card_index){
-    card_t card;
-    if(card_index > 0 && card_index < sizeof(player->hand)/sizeof(card_t)){
-        &card = &player->hand[card_index];
-        if(&card == 0x000){
-            card.name = INDEX_OUT_OF_RANGE;
-            return &card;
-        }
-        else{
-            card.name = INVALID_INDEX;
-            return &card;
-        }
-    }
+card_t card_from_hand(hand_t *hand,int card_index){
+    return (hand->cards[card_index]);
 }
 
-int place_card_in_hand(player_t *player, card_t *card){
-    &player->hand[player->hand.size++] = card;
-    return 0;
+void turn_begin(player_t *player){
+    draw_card(&player->deck_of_cards,&player->hand.cards[player->hand.size++]);
 }

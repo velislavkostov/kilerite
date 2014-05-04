@@ -5,7 +5,7 @@
 #include "manapool.h"
 
 typedef struct{
-    card_t hand[DECK_SIZE];
+    card_t cards[DECK_SIZE];
     int size;
 }hand_t;
 
@@ -18,6 +18,7 @@ typedef struct {
 } player_t;
 
 int change_hp(player_t *player,int hp);
-card_t* play_card_from_hand(player_t *player,int card_index);
+card_t card_from_hand(hand_t *hand,int card_index);
+void turn_begin(player_t *player);
 
 #endif // PLAYER_H_INCLUDED
