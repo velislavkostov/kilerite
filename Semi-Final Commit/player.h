@@ -15,6 +15,7 @@ typedef struct {
     //Hand has the size of a deck, because it is possible to hold all cards from your deck
     hand_t hand;
     int health_points;
+    graph_object hp_texture;
 } player_t;
 
 int change_hp(player_t *player,int hp);

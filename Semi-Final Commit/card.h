@@ -19,6 +19,6 @@ typedef struct {
     graph_object layout;
 }card_t;
 
-int attack(card_t *attacker,card_t *defender);
+int attack(int* attacker_hp,int* defender_hp,card_t *attacker,card_t *defender);
 
 #endif // CARD_H_INCLUDED

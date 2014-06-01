@@ -6,8 +6,8 @@ char* BASE_NUMERIC_PATHS[] = {"Resources/numeric/0.bmp","Resources/numeric/1.bmp
     ,"Resources/numeric/5.bmp","Resources/numeric/6.bmp","Resources/numeric/7.bmp","Resources/numeric/8.bmp","Resources/numeric/9.bmp"};
 
 int a = 255;
-int turn_count = 1;
 bool_t decreasing = false;
+int local_count = 0;
 int timer = 0;
 
 void compose_scene(void* param){
@@ -31,13 +31,13 @@ void compose_scene(void* param){
                 SDL_RenderCopy(data.renderer,data.board->cache->mana_crystal,NULL,&temp_rect);
             }
             //Drawing health crystal
-            temp_rect.w = 100;
-            temp_rect.h = data.board->players[data.board->player_id].health_points * 3;
+            temp_rect.w = 50;
+            temp_rect.h = 50;
             temp_rect.x = 25;
             temp_rect.y = data.board->display_mode.h - temp_rect.h;
-            SDL_SetTextureColorMod(data.board->cache->health_crystal,255,0,0);
-            SDL_SetTextureAlphaMod(data.board->cache->health_crystal,255 / 3);
-            SDL_RenderCopy(data.renderer,data.board->cache->health_crystal,NULL,&temp_rect);
+            SDL_SetTextureColorMod(data.board->players[data.board->player_id].hp_texture.texture,255,0,0);
+            SDL_SetTextureAlphaMod(data.board->players[data.board->player_id].hp_texture.texture,255 / 3);
+            SDL_RenderCopy(data.renderer,data.board->players[data.board->player_id].hp_texture.texture,NULL,&temp_rect);
             //Drawing hand cards
             for(i = 0; i < data.board->players[data.board->player_id].hand.size; i++){
                 SDL_RenderCopy(data.renderer,data.board->players[data.board->player_id].hand.cards[i].layout.texture,NULL,&data.board->players[data.board->player_id].hand.cards[i].layout.rectangle);
@@ -476,8 +476,15 @@ return 0;
 
 int end_turn(board_t *board){
     int i = 0;
+    int result;
     for(i = 0; i < 5; i++){
-        switch(attack(&board->cards_on_board[i + 5],&board->cards_on_board[i])){
+        if(board->player_id == 0){
+            result = attack(&board->players[1].health_points,&board->players[0].health_points,&board->cards_on_board[i + 5],&board->cards_on_board[i]);
+        }
+        else{
+            result = attack(&board->players[0].health_points,&board->players[1].health_points,&board->cards_on_board[i + 5],&board->cards_on_board[i]);
+        }
+        switch(result){
             case 0:
                 SDL_DestroyTexture(board->cards_on_board[i].layout.texture);
                 memset(&board->cards_on_board[i],0,sizeof(card_t));
@@ -510,16 +517,23 @@ Uint32 turn_callback(Uint32 interval,void* param){
         render_data_t data = *((render_data_t*)param);
         if(data.board){
             end_turn(data.board);
+            design_health(data.renderer,data.board);
             if(data.board->player_id == 0){
                 data.board->player_id = 1;
+                local_count++;
             }
             else{
                 data.board->player_id = 0;
+                local_count++;
+            }
+            if(local_count == 2){
+                data.board->turn_count++;
+                local_count = 0;
             }
             rotate_board(data.board);
             position_board_elements(data.renderer,data.board);
             light_index = 0;
-            turn_begin(&data.board->players[data.board->player_id]);
+            turn_begin(&data.board->players[data.board->player_id],data.board->turn_count);
 
         }
         return interval;
@@ -549,9 +563,20 @@ SDL_Surface* two_digit_number(surface_cache_t* cache,int number){
 
 void calculate_vital_ratios(card_t* card){
     do{
-        card->attack_points = rand() % 9 + 1;
-        card->health_points = rand() % 9 + 1;
-        card->mana_cost = rand() % 9 + 1;
-    }while((card->attack_points / card->health_points > 1 / 1.8) && (card->mana_cost / 2 > (card->attack_points + card->health_points)));
+        card->attack_points = rand() % 3 + 1;
+        card->health_points = rand() % 3 + 1;
+        card->mana_cost = rand() % 4 + 1;
+    }while((card->attack_points / card->health_points > 1) && (card->mana_cost / 2 > (card->attack_points + card->health_points)));
     return;
+}
+
+void design_health(SDL_Renderer* renderer, board_t* board){
+    SDL_Surface* load_surface = two_digit_number(board->cache,board->players[board->player_id].health_points);
+    if(load_surface){
+        SDL_DestroyTexture(board->players[0].hp_texture.texture);
+        SDL_DestroyTexture(board->players[1].hp_texture.texture);
+        board->players[0].hp_texture.texture = SDL_CreateTextureFromSurface(renderer,load_surface);
+        board->players[1].hp_texture.texture = SDL_CreateTextureFromSurface(renderer,load_surface);
+        SDL_FreeSurface(load_surface);
+    }
 }

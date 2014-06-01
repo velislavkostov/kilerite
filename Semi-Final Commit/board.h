@@ -2,7 +2,6 @@
 #define BOARD_H_INCLUDED
 
 #include "player.h"
-#include <windows.h>
 typedef struct{
     SDL_Texture* texture;
     SDL_Rect rectangle;
@@ -30,7 +29,7 @@ typedef struct{
     SDL_DisplayMode display_mode;
     int player_id;
     surface_cache_t* cache;
-    SDL_Texture* timer;
+    int turn_count;
 }board_t;
 
 int init_board(board_t *board);

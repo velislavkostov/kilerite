@@ -47,12 +47,13 @@ int main(int argc, char *argv[])
     board.cursor.rectangle.h = 25;
 
     turn_begin(&board.players[board.player_id]);
+    design_health(renderer,&board);
     position_board_elements(renderer,&board);
 
     SDL_TimerID timer = SDL_AddTimer(1000 / 120,main_timer_callback,&render_data);
     SDL_TimerID animator_timer = SDL_AddTimer(100,animator_timer_callback,&render_data);
-    SDL_TimerID turn_timer = SDL_AddTimer(1000 * 5,turn_callback,&render_data);
-    /*turn timer will be called at approximately 25s interval,
+    SDL_TimerID turn_timer = SDL_AddTimer(1000 * 60,turn_callback,&render_data);
+    /*turn timer will be called at approximately 1min interval,
     the callback will return dragged but not placed card back to hand and will change player_id value
     rendering part is flexible enough to handle the change without data races of any kind
     */
